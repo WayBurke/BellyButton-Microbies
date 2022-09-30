@@ -78,7 +78,7 @@ console.log("Is this first? - above getJsonData() #4");
 console.log("Is this first? - above creating top10 sample from each - #5");
 //let top10Sample ={}; //dictionary for the top 10
 function setBarChart(sampleInfo){
-    let top10SampleList =[]; //Array to store the Top 10 of each item in the Samples dictionary
+    let top10SampleList =[];
 
     //for (let j =0; j<sampleInfo.length; j++){
     for (let j =0; j<2; j++){
@@ -200,11 +200,11 @@ fetch(url)
       // Examine the text in the response  
       response.json().then(function(data) {  
         let option;
-       
+    
     	for (let i = 0; i < data.names.length; i++) {
           option = document.createElement('option');
       	  option.text = data.names[i];
-      	  //option.value = data.names[i]; //This is setting the value in the HTML tag for action
+      	  //option.value = data.names[i]; This is setting the value in the HTML for action
       	  dropdown.add(option);
     	}    
       });  
@@ -328,31 +328,13 @@ function init(sampleInfo, metaInfo) {
     //document.getElementById("sample-metadata").innerHTML =info.toString();
 
 
-var tempWMB = [1,2,3,4]
+
     //How to get multiple lines?
-    //document.getElementById("sample-metadata").innerHTML = 
-    
-    d3.select("div")
-      .selectAll('sample-metadata')
-      .data(tempWMB)
-      .enter()
-      .append('br')
-     // .text("help") // this does not work
-      //.text(document.getElementById("sample-metadata").innerHTML =tempWMB)
-      .text(function(d){return d;});
 
 
-/*
-var dataset = [1, 2, 3, 4, 5];
 
-d3.select('body')
-    .selectAll('p')
-    .data(dataset)
-    .enter()
-    .append('p') // appends paragraph for each data element
-    .text('D3 is awesome!!');
 
-*/
+
 
     //-------------------------------------------------
 
