@@ -15,6 +15,6 @@ The purpose of this project is to use JavaScript to create interactive web visua
 ## Key Files
 * [JavaScript File](/static/js/app.js) - JavaScript code for the manipulation of the HTML file
   
-* [Index.html](belly-button-challenge//index.html) - HTML file to be hosted on GitHub Page
+* [Index.html](//index.html) - HTML file to be hosted on GitHub Page
 
 
