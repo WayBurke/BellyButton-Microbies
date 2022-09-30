@@ -1,193 +1,178 @@
-console.log("Is this first? - above variable declarations #1");
-//============================================================================
+//================================
 //GLOBAL DECLARATIONS
-//============================================================================
-
-
-//Variables for parts of the JSON
-var metaLabels, metaInfo, sampleLabels, sampleInfo;
-
-console.log("Is this first? - above url #2");
-//URL to the JSON data
+//===============================
 const url ="https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
-console.log(url);
 
-//============================================================================
-//ABOVE WORKS FOR READING THE JSON FROM THE URL.
-//============================================================================
+let dropdown = document.getElementById('selDataset');
+let defaultOption = document.createElement('option');
 
-// Fetch the JSON data and console log it -- metadata, names, samples
-//What if i were to store the value rather than console.
-console.log("Is this first? - above d3.json() #3");
-d3.json(url).then(function(json) {
-   //console.log(data);
-   //getJsonData(data);// this will get the json info into a variable in the function getJsonData
-  
-
-   console.log("Inside getJsonData; sample info2 - line 368-372"); //Informational - to be removed
-  sampleInfo = Object.values(json.samples);
-  sampleLabels = Object.keys(json.samples[0]);//['id', 'otu_ids', 'sample_values', 'otu_labels']
-  metaInfo = Object.values(json.metadata); // All the data in Metatdata
-  metaLabels = Object.keys(json.metadata[0]); // do i need this?? //['id', 'ethnicity', 'gender', 'age', 'location', 'bbtype', 'wfreq']
-
-  console.log(sampleInfo);
- init(sampleInfo, metaInfo);
-});
+//Global variables for the Json
+var sampleInfo, metaData, metaLabel, metaEntries, metaEntriesAll;
 
 
 //============================================================================
-//WORK AREA - START
+//INITIATION FUNCTION
 //============================================================================
 
-/*about the data: 
-    Names is an array; 
-    Metadata is an array of dictionaries; 
-    Samples: an array of dictionaries
+function init(){
+    fetch(url)  
+    .then(  
+        function(response) {  
+        if (response.status !== 200) {  
+            console.warn('Looks like there was a problem. Status Code: ' + 
+            response.status);  
+            return;  
+        }
 
-*/
-//-----------------------------------------------------------------
+        // Examine the text in the response  
+        response.json().then(function(data) {  
+            
+           //SETTING UP GLOBAL VARIABLES
+            sampleInfo = Object.values(data.samples); 
+            metaData = Object.values(data.metadata);
+            metaLabel = Object.keys(data.metadata[0]); //Getting the keys only from the Metadata element
+            metaEntries = Object.entries(data.metadata[0]); //Getting the keys/value pair from the Metadata element
+            
+            metaEntriesAll = Object.entries(data.metadata);
 
+            //Setting the default value for the dropdown
+            defaultOption.text = data.names[0];
+            
+            
+            /*============================================================================
+            //                  PANEL-BODY SETUP INFORMATION
+            //============================================================================*/
+            
+            let demoInfo = "";
+            metaEntries.forEach(myFunction); //Calling function to format the panel-body
+           
+            document.getElementById("sample-metadata").innerHTML =demoInfo;
 
-//============================================================================
-// FUNCTION TO GET THE INFO FROM THE JSON OF THE SELECTED SUBJECT
-//============================================================================
+            function myFunction(value, index, array){
+                demoInfo += value[0] +": "+value[1]+"<br>"
+            }
 
-/*WMB: If i have a function to get the value of the data, it need to be passed to something
-as an array maybe??
+            /*============================================================================
+            //                  BAR CHART SETUP INFORMATION
+            //============================================================================*/
+            
+            let sampleID = sampleInfo[0].id; //variable for the ID
 
-this function is to be called by 
+            //using slicing to get the top10 from the sample 
+            let tempIds = sampleInfo[0].otu_ids.slice(0,10); //list fo the otu_ids
+            let tempLabels = sampleInfo[0].otu_labels.slice(0,10); //list fo the otu_labels
+            let tempSample = sampleInfo[0].sample_values.slice(0,10); //list fo the sample_value
 
-getJsonData is working.. but now how do i use it in previous manual code areas
-*/
-console.log("Is this first? - above getJsonData() #4");
-/*function getJsonData(json){
-  console.log("Inside getJsonData; sample info2 - line 368-372"); //Informational - to be removed
-  sampleInfo = Object.values(json.samples);
-  sampleLabels = Object.keys(json.samples[0]);//['id', 'otu_ids', 'sample_values', 'otu_labels']
-  metaInfo = Object.values(json.metadata); // All the data in Metatdata
-  metaLabels = Object.keys(json.metadata[0]); // do i need this?? //['id', 'ethnicity', 'gender', 'age', 'location', 'bbtype', 'wfreq']
+                     
+            //creating duplicate to allow for name modification
+            let temp = tempIds.slice(); 
+            for (let i = 0; i <temp.length; i++){
+                temp[i]= "OTU " + temp[i];
+            };
 
-  console.log(sampleInfo);
-};*/
+            //------------BAR CHART CONFIGURATION SETTINGS------------
+            barData =[{
+                type:"bar",
+                y:temp,
+                x:tempSample,
+                orientation: 'h',
+                hovertext:tempLabels,
+                transforms: [{
+                    type: 'sort',
+                    target: 'y',
+                    order: 'descending'
+                  }]
+            }];  
+                
+            let barLayout = {
+                title:{text:`Top 10 OTUs in Test Subject: ${sampleID}`, font:{size:20}}
+            };
+            //-----------------------------------------------
 
+            
+            /*============================================================================
+            //                  BUBBLE CHART SETUP INFORMATION
+            //============================================================================*/
+            bubbleData=[{
+                x:sampleInfo[0].otu_ids,
+                y:sampleInfo[0].sample_values,
+                text:sampleInfo[0].otu_labels,
+                mode:'markers',
+                marker:{
+                  size:sampleInfo[0].sample_values,
+                  color:sampleInfo[0].otu_ids
+                    
+                }
+              }];
+          
+          
+              let bubbleLayout ={
+                title: {text:`Bubble Chart for Test Subject: ${sampleInfo[0].id}`, font:{size:25}},
+                showlegend:false,
+                height:550,
+                width:1250
+          
+              };
 
-//------------------------------------
-// Preliminary For Loop
-// thinking to use slicing
-//------------------------------------
-console.log("Is this first? - above creating top10 sample from each - #5");
-//let top10Sample ={}; //dictionary for the top 10
-function setBarChart(sampleInfo){
-    let top10SampleList =[]; //Array to store the Top 10 of each item in the Samples dictionary
+            /*============================================================================
+            //                  GAUGE METER SETUP INFORMATION
+            //============================================================================*/
+            gaugeData=[{
+                value:metaData[0].wfreq,
+                title:{text:`Belly Button Washing Frequency <br /> Scrubs per Week for ID: ${metaData[0].id} <br />`},
+                type:"indicator",
+                mode:"gauge+number",
+                gauge: {
+                  axis: {range: [null, 9] },
+                  bar:{color:"transparent"},
+                  threshold:{ //USING THRESHOLD AS MY GAUGE MARKER
+                    line:{color:"red",width:4},
+                    thickness:0.75,
+                    value:metaData[0].wfreq
+                  },
+                  steps: 
+                    [{ range: [0, 1], color: "#cece84"},
+                    { range: [1, 2], color: "#bcc274" },
+                    { range: [2, 3], color: "#aab766" },
+                    { range: [3, 4], color: "#98ac57" },
+                    { range: [4, 5], color: "#86a149" },
+                    { range: [5, 6], color: "#73963c" },
+                    { range: [6, 7], color: "#5f8b2f" },
+                    { range: [7, 8], color: "#4b8022" },
+                    { range: [8, 9], color: "#347515" }]
+                  
+                }
+            }];
+          
+          
+              let gaugeLayout={
+                width:500,
+                height:500,
+                margin: { t: 2, b: 0 }
+              };
+          
 
-    //for (let j =0; j<sampleInfo.length; j++){
-    for (let j =0; j<2; j++){
-      let top10Sample ={}; //dictionary for the top 10
-      
-      /*---------------------------------------*/
-      //Throws an error initially, but still works
-     // console.log(sampleInfo[j]); //test print -- returning undefine because the function getJsonData has not yet run
-      //Purpose of this for loop is to create a new Sample List for the charts
-      let sampleID = sampleInfo[j].id; //variable for the ID -- returning undefine because the function getJsonData has not yet run
-      /*---------------------------------------*/
+            //============================================================================
+            //Initiate the plots
+            //============================================================================
+            Plotly.newPlot('bar', barData, barLayout);
+            Plotly.newPlot('bubble', bubbleData, bubbleLayout);
+            Plotly.newPlot('gauge', gaugeData, gaugeLayout);
 
+        });  
+        }  
+    )  
+    .catch(function(err) {  
+        console.error('Fetch Error -', err);  
+    });
 
-      //using slicing to get the top10 from the sample 
-      //Lists to hold the other segment of the sample
-      let tempIds = sampleInfo[j].otu_ids.slice(0,10); //list fo the otu_ids
-      let tempLabels = sampleInfo[j].otu_labels.slice(0,10); //list fo the otu_labels
-      let tempSample = sampleInfo[j].sample_values.slice(0,10); //list fo the sample_value
-      console.log(tempIds);
-    /*
-      //Modifying the name of the otu_ids to include the text OTU
-      for (let i = 0; i <tempIds.length; i++){
-        tempIds[i]= "OTU " + tempIds[i];
-      };*/
+}// END OF INIT FUNCTION
 
-      //Adding the info to a dictionary
-      top10Sample["id"]=sampleID;
-      top10Sample["otu_ids"]=tempIds;
-      top10Sample["otu_labels"]=tempLabels;
-      top10Sample["sample_values"]=tempSample;
-
-      //Adding each dictionary to the list
-      top10SampleList.push(top10Sample);
-
-
-    }
-    //console.log(top10SampleList[0]); //Tempout
-
-    //------------BAR CHART INFORMATION------------
-    let temp = top10SampleList[0].otu_ids;
-    //console.log(`Temp list order before add: ${temp}`) //Tempout
-    for (let i = 0; i <temp.length; i++){
-      temp[i]= "OTU " + temp[i];
-    };
-
-      barData =[{
-        type:"bar",
-        y:temp,
-        x:top10SampleList[0].sample_values,
-        //y:top10SampleList[0].otu_ids,
-      
-        orientation: 'h',
-        xhovertext:top10SampleList[0].otu_labels
-      }];  
-      //console.log(`Temp list order after adding OTU: ${temp}`) //Tempout
-      
-      let barLayout = {
-        title:`Top 10 OTUs in Test Subject: ${top10SampleList[0].id}`
-      };
-    //-----------------------------------------------
-
-    Plotly.newPlot('bar', barData, barLayout);
-};
-
-
-
-
-
-//------------------------------------
-//End of For loop
-//------------------------------------
-
-
-
-//------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-//================================================
-//I need to get the individual Metadata keys
-//let metaKeys = Object.keys(myJson[0].metadata);
-//let metaKeys = myJson["metatdata"];
-//console.log("metaKeys:");
-//console.log(metaKeys);
-//===============================================
 
 //============================================================================
 //THIS BLOCK POPULATES THE DROPDOWN USING THE URL
 //============================================================================
-let dropdown = document.getElementById('selDataset');
-dropdown.length = 0;
 
-let defaultOption = document.createElement('option');
-defaultOption.text = 'Select Test ID';
-
-dropdown.add(defaultOption);
-dropdown.selectedIndex = 0;
-
-console.log("Is this first? - above fetch dropdown");
 fetch(url)  
   .then(  
     function(response) {  
@@ -212,202 +197,171 @@ fetch(url)
   )  
   .catch(function(err) {  
     console.error('Fetch Error -', err);  
-  });
-
-//=======================================================
-//END OF BLOCK THAT POPULATES THE DROPDOWN USING THE URL
-//=======================================================
-
-
-
-
+  }); // END OF BLOCK THAT POPULATES THE DROPDOWN USING THE URL
 
 
 //============================================================================
-// WORK AREA - END
+//CREATING EVENT ON DROPDOWN CHANGE
 //============================================================================
-
-
-//============================================================================
-//BELOW WORKS FOR PLOT A CHART - JUST NOT THE ONES WE WORKING ON RIGHT NOW
-//============================================================================
-// Initializes the page with a default plot
-// this needs to be updated
-console.log("Is this first? - above Init()");
-function init(sampleInfo, metaInfo) {
-  console.log("Is this first? - inside Init()");
-  setBarChart(sampleInfo);
-  /*
-    //------------BAR CHART INFORMATION------------
-    let temp = top10SampleList[0].otu_ids;
-    //console.log(`Temp list order before add: ${temp}`) //Tempout
-    for (let i = 0; i <temp.length; i++){
-      temp[i]= "OTU " + temp[i];
-    };
-
-      barData =[{
-        type:"bar",
-        y:temp,
-        x:top10SampleList[0].sample_values,
-        //y:top10SampleList[0].otu_ids,
-      
-        orientation: 'h',
-        xhovertext:top10SampleList[0].otu_labels
-      }];  
-      //console.log(`Temp list order after adding OTU: ${temp}`) //Tempout
-      
-      let barLayout = {
-        title:`Top 10 OTUs in Test Subject: ${top10SampleList[0].id}`
-      };
-    //-----------------------------------------------
-*/
-
-    //------------BUBBLE CHART INFORMATION------------
-    bubbleData=[{
-      x:sampleInfo[0].otu_ids,
-      y:sampleInfo[0].sample_values,
-      text:sampleInfo[0].otu_labels,
-      mode:'markers',
-      marker:{
-        size:sampleInfo[0].sample_values,
-        color:sampleInfo[0].otu_ids
-          
-      }
-    }];
-
-
-    let bubbleLayout ={
-      title: `Bubble Chart for Test Subject: ${sampleInfo[0].id}`,
-      showlegend:false,
-      height:550,
-      width:1450
-
-    };
-    //-------------------------------------------------
-
-
-
-
-    //------------GAUGE CHART INFORMATION------------
-
-    gaugeData=[{
-      domain:{x:metaInfo[0].wfreq},
-      title:{text:"Belly Button Washing Frequency", font:{size:30}},
-      type:"indicator",
-      mode:"gauge"
-    }];
-
-
-    let gaugeLayout={
-      width:600,
-      height:500
-    };
-
-
-    //-------------------------------------------------
-    // PANEL WORK
-    //-------------------------------------------------
-    /*
-    const metaTable = document.getElementsByClassName("panel-body");
-    //metaTable.dataset = metaInfo[0];
-    metaTable.write(metaInfo[0]);
-    console.log(metaTable.dataset);*/
-
-    //d3.select(".panel-body").text(metaInfo[0]);
-
-    let info = metaInfo[0];
-    //console.log(info); //Tempout
-
-    let testData = {id: 2, name:3, height: 5, status:"good"};
-    let testDataLabel = ["id", "name", "height", "status"];
-    //Below gets the data in the right area - YES!!
-    //document.getElementById("sample-metadata").innerHTML = "help"; // this works
-    document.getElementById("sample-metadata").innerHTML =info.id; //this works
-    //document.getElementById("sample-metadata").innerHTML =testDataLabel[0] +testData.id;
-
-    //document.getElementById("sample-metadata").innerHTML =info.toString();
-
-
-var tempWMB = [1,2,3,4]
-    //How to get multiple lines?
-    //document.getElementById("sample-metadata").innerHTML = 
-    
-    d3.select("div")
-      .selectAll('sample-metadata')
-      .data(tempWMB)
-      .enter()
-      .append('br')
-     // .text("help") // this does not work
-      //.text(document.getElementById("sample-metadata").innerHTML =tempWMB)
-      .text(function(d){return d;});
-
-
-/*
-var dataset = [1, 2, 3, 4, 5];
-
-d3.select('body')
-    .selectAll('p')
-    .data(dataset)
-    .enter()
-    .append('p') // appends paragraph for each data element
-    .text('D3 is awesome!!');
-
-*/
-
-    //-------------------------------------------------
-
-
-
-      //----------PLOT INSTUCTIONS
-        //Plotly.newPlot('bar', barData, barLayout); // moved to setBar function
-        Plotly.newPlot('bubble', bubbleData, bubbleLayout);
-        Plotly.newPlot('gauge', gaugeData, gaugeLayout);
-
-
-  } //END OF INIT()
-
-
-
-//ADD CODE HERE
-
-
-
-
-
-//============================================================================
-// CREATING EVENT ON DROPDOWN CHANGE
-//============================================================================
-console.log("Is this first? - above optionChange()");
-//let dropSubject = d3.select()
+var foundIt; //Variable to store the index of the item selected
 function optionChanged(value){
-  console.log("Dropdown was changed! Yeah!!");
-  document.getElementById("sample-metadata").innerHTML =value;
+    console.log("Dropdown was changed! Yeah!!");
+    console.log(`Value: ${value}`);
 
-  /*WMB: what do i need to pass into the updatePlotly to change or update the 
-  charts */
- 
- // updatePlotly()
-};
+    
+    for (let i= 0; i< sampleInfo.length; i++)
+    {
+        if (sampleInfo[i].id == value){
+            foundIt = i;
+        };
+    };
 
+    console.log(`Found it index: ${foundIt} with ID: ${sampleInfo[foundIt].id}`);
+    
+    //Calling Plotting function for the item selected
+    updatePlotly(sampleInfo[foundIt],metaData[foundIt]);
 
+    /*============================================================================
+    //                  PANEL-BODY UPDATED INFORMATION
+    //============================================================================*/
+    
+    d3.json(url).then(function(response) {
+        metaEntriesAll = Object.entries(response.metadata[foundIt]);
+              
+        let demoInfo = "";
+        metaEntriesAll.forEach(myFunction); //Calling function to format the panel-body
+      
+      
+        document.getElementById("sample-metadata").innerHTML =demoInfo;
 
+        function myFunction(value, index, array){
+            demoInfo += value[0] +": "+value[1]+"<br>";
+           
+        }
 
+    });
+    
+  };//END OF ONCHANGE ()
 
 
 
 //============================================================================
 // FUNCTION TO UPDATE THE PLOTPLY
 //============================================================================
-console.log("Is this first? - above updatePlotly()");
-function updatePlotly(newdata,value) {
-  //WMB: need to get the value in the drop down or some way of setting the data for the plot
 
-  Plotly.restyle('bar', barData, barLayout);
-  Plotly.restyle('bubble', bubbleData, bubbleLayout);
-  Plotly.restyle('gauge', gaugeData, gaugeLayout);
+function updatePlotly(subjectSelected,selectedMeta) {
+    //Testing purposes
+    console.log(subjectSelected);
+    console.log(selectedMeta);
+    
+    /*============================================================================
+    //                  BAR CHART SETUP INFORMATION
+    //============================================================================*/
+            
+    let sampleID = subjectSelected.id; //variable for the ID
+
+    //using slicing to get the top10 from the sample 
+    let tempIds = subjectSelected.otu_ids.slice(0,10); //list fo the otu_ids
+    let tempLabels = subjectSelected.otu_labels.slice(0,10); //list fo the otu_labels
+    let tempSample = subjectSelected.sample_values.slice(0,10); //list fo the sample_value
+
+                
+    //creating duplicate to allow for name modification
+    let temp = tempIds.slice(); 
+    for (let i = 0; i <temp.length; i++){
+        temp[i]= "OTU " + temp[i];
+    };
+
+    //------------BAR CHART CONFIGURATION SETTINGS------------
+    barData2 =[{
+        type:"bar",
+        y:temp,
+        x:tempSample,
+        orientation: 'h',
+        hovertext:tempLabels,
+        transforms: [{
+            type: 'sort',
+            target: 'y',
+            order: 'descending'
+            }]
+    }];  
+        
+    let barLayout2 = {
+        title:`Top 10 OTUs in Test Subject: ${sampleID}`
+    };
+    //-----------------------------------------------
+
+    /*============================================================================
+    //                  BUBBLE CHART SETUP INFORMATION
+    //============================================================================*/
+    bubbleData2=[{
+      x:subjectSelected.otu_ids,
+      y:subjectSelected.sample_values,
+      text:subjectSelected.otu_labels,
+      mode:'markers',
+      marker:{
+          size:subjectSelected.sample_values,
+          color:subjectSelected.otu_ids
+          
+      }
+    }];
+    
+    
+    let bubbleLayout2 ={
+      title: `Bubble Chart for Test Subject: ${subjectSelected.id}`,
+      showlegend:false,
+      height:550,
+      width:1250
+
+    };
+
+    
+    /*============================================================================
+    //                  GAUGE METER SETUP INFORMATION
+    //============================================================================*/  
+    gaugeData2=[{
+        value:selectedMeta.wfreq,
+        title:{text:`Belly Button Washing Frequency <br /> Scrubs per Week for ID: ${selectedMeta.id} <br />`},
+        type:"indicator",
+        mode:"gauge+number",
+        gauge: {
+          axis: {range: [null, 9] },
+          bar:{color:"transparent"},
+          threshold:{
+            line:{color:"red",width:4},
+            thickness:0.75,
+            value:selectedMeta.wfreq
+          },
+          steps: 
+            [{ range: [0, 1], color: "#cece84"},
+            { range: [1, 2], color: "#bcc274" },
+            { range: [2, 3], color: "#aab766" },
+            { range: [3, 4], color: "#98ac57" },
+            { range: [4, 5], color: "#86a149" },
+            { range: [5, 6], color: "#73963c" },
+            { range: [6, 7], color: "#5f8b2f" },
+            { range: [7, 8], color: "#4b8022" },
+            { range: [8, 9], color: "#347515" }]
+          
+        }
+    }];
+
+
+    let gaugeLayout2={
+      width:500,
+      height:500,
+      margin: { t: 2, b: 0 }
+    };
+
+
+
+    Plotly.newPlot('bar', barData2, barLayout2);
+    Plotly.newPlot('bubble', bubbleData2, bubbleLayout2);
+    Plotly.newPlot('gauge', gaugeData2, gaugeLayout2);
 
 }
 
-console.log("Is this first? - above calling Init()");
-//This needs to be at the very end
+//************************/
+
 init();
+
