@@ -6,6 +6,9 @@ Repository that demonstrates the creation of JavaScript code to create a dashboa
 ## Overview
 The purpose of this project is to use JavaScript to create interactive web visualization of the Belly Button dataset that was accessed via a JSON Object.
 
+### Webpage
+The webpage can be viewed at:[Interactive Belly Button Page] (https://wayburke.github.io/belly-button-challenge/)
+
 ## Features four Interactive visualization items created using JavaScript:
 * HTML Panel Body was updated to show the Demographic Information found in the metadata for the subject selected
 * Horizontal Bar chart was created to show the top 10 OTUs found in the selected subject
