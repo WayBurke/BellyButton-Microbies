@@ -5,7 +5,7 @@
 The purpose of this project is to use JavaScript to create interactive web visualization of the Belly Button dataset that was accessed via a JSON Object.
 
 **Webpage:**
-The webpage can be viewed at: [Interactive Belly Button Page](https://wayburke.github.io/belly-button-challenge/)
+The webpage can be viewed at: [Interactive Belly Button Page](https://wayburke.github.io/BellyButton-Microbies/)
 
 ## Features
 ### Four Interactive visualization items created using JavaScript:
